@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Página de Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: url('https://wallpapers.com/images/hd/holographic-world-map-4k-2dx3rmr0ph6uud5a.jpg') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: rgba(51, 51, 51, 0.9); /* Cinza médio com leve transparência */
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      width: 300px;
+      color: #eee; /* Texto cinza claro */
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 24px;
+      color: #eee;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      cursor: pointer;
+      padding: 10px;
+      font-weight: bold;
+      border-bottom: 2px solid transparent;
+      color: #eee;
+    }
+
+    .tab.active {
+      border-bottom: 2px solid #00bcd4;
+      color: #00bcd4;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+      position: relative;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: #eee;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 8px 30px 8px 8px;
+      box-sizing: border-box;
+      border: 1px solid #999;
+      border-radius: 4px;
+      background-color: #555; /* Cinza mais claro */
+      color: #eee;
+    }
+
+    .form-group input::placeholder {
+      color: #ccc;
+    }
+
+    .toggle-password {
+      position: absolute;
+      top: 30px;
+      right: 10px;
+      cursor: pointer;
+      user-select: none;
+      color: #ccc;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 12px;
+      margin-top: 4px;
+      position: relative;
+      padding-left: 5px;
+    }
+
+    .form {
+      display: none;
+    }
+
+    .form.active {
+      display: block;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #00bcd4; /* Ciano */
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0097a7;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2 id="form-title">Login</h2>
+
+    <div class="tabs">
+      <div class="tab active" onclick="showForm('login', event)">Login</div>
+      <div class="tab" onclick="showForm('criarConta', event)">Criar Conta</div>
+    </div>
+
+    <div id="login" class="form active">
+      <div class="form-group">
+        <label for="usuario">Usuário</label>
+        <input type="text" id="usuario" placeholder="Digite seu usuário" oninput="validarInput(this)">
+        <div class="error-message" id="erro-usuario"></div>
+      </div>
+      <div class="form-group">
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" placeholder="Digite sua senha" oninput="validarInput(this)">
+        <span class="toggle-password" onclick="togglePassword('senha', this)">👁️</span>
+        <div class="error-message" id="erro-senha"></div>
+      </div>
+      <button type="submit">Entrar</button>
+    </div>
+
+    <div id="criarConta" class="form">
+      <div class="form-group">
+        <label for="nome">Nome</label>
+        <input type="text" id="nome" placeholder="Digite seu nome" oninput="validarInput(this)">
+        <div class="error-message" id="erro-nome"></div>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="Digite seu email" oninput="validarInput(this)">
+        <div class="error-message" id="erro-email"></div>
+      </div>
+      <div class="form-group">
+        <label for="senhaCadastro">Senha</label>
+        <input type="password" id="senhaCadastro" placeholder="Crie uma senha" oninput="validarInput(this)">
+        <span class="toggle-password" onclick="togglePassword('senhaCadastro', this)">👁️</span>
+        <div class="error-message" id="erro-senhaCadastro"></div>
+      </div>
+      <div class="form-group">
+        <label for="confirmarSenha">Confirmar Senha</label>
+        <input type="password" id="confirmarSenha" placeholder="Confirme sua senha" oninput="validarInput(this)">
+        <span class="toggle-password" onclick="togglePassword('confirmarSenha', this)">👁️</span>
+        <div class="error-message" id="erro-confirmarSenha"></div>
+      </div>
+      <button type="button" onclick="validarCadastro()">Criar Conta</button>
+    </div>
+  </div>
+
+  <script>
+    function showForm(formId, event) {
+      const tabs = document.querySelectorAll('.tab');
+      const forms = document.querySelectorAll('.form');
+      const title = document.getElementById('form-title');
+
+      tabs.forEach(tab => tab.classList.remove('active'));
+      forms.forEach(form => form.classList.remove('active'));
+
+      document.getElementById(formId).classList.add('active');
+      event.target.classList.add('active');
+
+      title.textContent = formId === 'login' ? 'Login' : 'Cadastrar';
+    }
+
+    function togglePassword(inputId, iconElement) {
+      const input = document.getElementById(inputId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        iconElement.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        iconElement.textContent = '👁️';
+      }
+    }
+
+    function validarInput(input) {
+      const invalidChars = /[\/\\<>:"|?*.ç\[\]\{\}\(\);\^~´`=+]/g;
+      const erroId = 'erro-' + input.id;
+      const erroEl = document.getElementById(erroId);
+
+      if (invalidChars.test(input.value)) {
+        erroEl.textContent = 'Caracteres inválidos detectados.';
+      } else {
+        erroEl.textContent = '';
+      }
+    }
+
+    function validarCadastro() {
+      const senha = document.getElementById('senhaCadastro').value;
+      const confirmar = document.getElementById('confirmarSenha').value;
+      const erroConfirmar = document.getElementById('erro-confirmarSenha');
+
+      if (senha !== confirmar) {
+        erroConfirmar.textContent = 'As senhas não coincidem!';
+      } else {
+        erroConfirmar.textContent = '';
+        alert('Conta criada com sucesso!');
+      }
+    }
+  </script>
+
+</body>
+</html>
