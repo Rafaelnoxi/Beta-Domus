@@ -1,468 +1,182 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Controle de Gastos</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background-color: #222;
-      color: #fff;
-      background-size: cover;
-      background-position: center;
-      height: 100vh;
-      position: relative;
-    }
-
-    /* Perfil no canto superior direito */
-    #perfil {
-      position: fixed;
-      top: 10px;
-      right: 15px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(40,40,40,0.85);
-      padding: 6px 12px;
-      border-radius: 25px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.5);
-      cursor: pointer;
-      z-index: 1000;
-      user-select: none;
-      transition: background-color 0.3s;
-    }
-    #perfil:hover {
-      background-color: rgba(0, 188, 212, 0.15);
-    }
-    #perfil img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #00bcd4;
-    }
-    #perfil span {
-      font-weight: bold;
-      font-size: 14px;
-      color: #00bcd4;
-      user-select: text;
-    }
-
-    h1 {
-      text-align: center;
-      margin: 30px 0 10px;
-    }
-
-    .center {
-      text-align: center;
-      margin: 20px 0;
-    }
-
-    .main-button {
-      background-color: #00bcd4;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 12px 25px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .main-button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-
-    .expense-panel, .history-panel, .profile-panel {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: rgba(40, 40, 40, 0.95);
-      padding: 25px;
-      border-radius: 12px;
-      width: 400px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
-      animation: fadeIn 0.4s ease;
-      z-index: 9999;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translate(-50%, -60%); }
-      to { opacity: 1; transform: translate(-50%, -50%); }
-    }
-
-    .form-group {
-      margin-bottom: 15px;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 14px;
-      color: #ddd;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%;
-      padding: 8px;
-      border-radius: 6px;
-      border: none;
-      font-size: 14px;
-      background-color: #e0e0e0;
-      color: #222;
-      resize: vertical;
-    }
-
-    .form-group textarea {
-      min-height: 60px;
-    }
-
-    .close-btn {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      font-size: 20px;
-      color: #fff;
-      cursor: pointer;
-    }
-
-    #registrarGasto, #salvarPerfil {
-      background-color: #0288d1;
-      color: white;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      width: 100%;
-      font-weight: bold;
-      transition: background-color 0.2s ease;
-    }
-
-    #registrarGasto:hover, #salvarPerfil:hover {
-      background-color: #0277bd;
-    }
-
-    .history-button {
-      display: block;
-      margin: 20px auto;
-      padding: 6px 12px;
-      font-size: 13px;
-      background-color: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      border: 1px solid #888;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .history-list {
-      max-height: 300px;
-      overflow-y: auto;
-      margin-top: 10px;
-      color: #eee;
-    }
-
-    .history-item {
-      background-color: rgba(255, 255, 255, 0.05);
-      padding: 10px;
-      border-radius: 5px;
-      margin-bottom: 8px;
-      font-size: 14px;
-    }
-
-    .history-item span {
-      display: block;
-    }
-
-    .history-actions {
-      margin-top: 5px;
-    }
-
-    .history-actions button {
-      font-size: 12px;
-      margin-right: 8px;
-      background-color: #444;
-      color: white;
-      border: none;
-      padding: 4px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    canvas {
-      display: block;
-      margin: 40px auto 10px;
-      max-width: 90%;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Controle de Gastos</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body { font-family: Arial; margin:0; background:#222; color:#fff; height:100vh; }
+#perfilContainer { position:fixed; top:10px; right:15px; display:flex; gap:10px; z-index:1000; }
+#perfil { display:flex; align-items:center; gap:10px; background:rgba(40,40,40,0.85); padding:6px 12px; border-radius:25px; cursor:pointer; }
+#perfil:hover { background-color: rgba(0, 188, 212, 0.15); }
+#perfil img { width:40px; height:40px; border-radius:50%; border:2px solid #00bcd4; object-fit:cover; }
+#perfil span { font-weight:bold; font-size:14px; color:#00bcd4; }
+#logoutBtn { background-color:#e53935; border:none; padding:6px 12px; border-radius:6px; color:#fff; font-weight:bold; cursor:pointer; }
+#logoutBtn:hover { background-color:#c62828; }
+h1 { text-align:center; margin:30px 0 10px; }
+.center { text-align:center; margin:20px 0; }
+.main-button { background-color:#00bcd4; color:white; border:none; border-radius:5px; padding:12px 25px; font-size:16px; cursor:pointer; }
+.main-button:hover { transform: scale(1.05); }
+.expense-panel, .history-panel, .profile-panel { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background-color:rgba(40,40,40,0.95); padding:25px; border-radius:12px; width:400px; z-index:9999; }
+.close-btn { position:absolute; top:10px; right:15px; font-size:20px; color:#fff; cursor:pointer; }
+.form-group { margin-bottom:15px; }
+.form-group label { display:block; margin-bottom:5px; font-size:14px; color:#ddd; }
+.form-group input, .form-group select, .form-group textarea { width:100%; padding:8px; border-radius:6px; border:none; font-size:14px; background:#e0e0e0; color:#222; }
+.form-group textarea { min-height:60px; }
+#registrarGasto, #salvarPerfil { background-color:#0288d1; color:white; padding:10px; border:none; border-radius:6px; cursor:pointer; width:100%; font-weight:bold; }
+#registrarGasto:hover, #salvarPerfil:hover { background-color:#0277bd; }
+.history-button { display:block; margin:20px auto; padding:6px 12px; font-size:13px; background-color:rgba(255,255,255,0.1); color:#fff; border:1px solid #888; border-radius:5px; cursor:pointer; }
+.history-list { max-height:300px; overflow-y:auto; margin-top:10px; color:#eee; }
+.history-item { background-color: rgba(255,255,255,0.05); padding:10px; border-radius:5px; margin-bottom:8px; font-size:14px; }
+.history-item span { display:block; }
+.history-actions { margin-top:5px; }
+.history-actions button { font-size:12px; margin-right:8px; background:#444; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; }
+canvas { display:block; margin:40px auto 10px; max-width:90%; }
+</style>
 </head>
 <body>
 
-<!-- Perfil no canto superior direito -->
-<div id="perfil" title="Clique para editar perfil">
-  <img src="https://i.pravatar.cc/40" alt="Foto Perfil" id="fotoPerfil" />
-  <span id="nomePerfil"></span>
+<div id="perfilContainer">
+  <div id="perfil" title="Clique para editar perfil">
+    <img src="https://i.pravatar.cc/40" alt="Foto Perfil" id="fotoPerfil" />
+    <span id="nomePerfil"></span>
+  </div>
+  <button id="logoutBtn">Sair</button>
 </div>
 
 <h1>Controle de Gastos</h1>
-
-<div class="center">
-  <button class="main-button" onclick="openPanel()">Adicionar Gasto</button>
-</div>
-
+<div class="center"><button class="main-button" onclick="openPanel()">Adicionar Gasto</button></div>
 <canvas id="gastoChart" width="400" height="200"></canvas>
-
 <button class="history-button" onclick="openHistory()">Ver Histórico de Gastos</button>
 
-<!-- Painel para adicionar gasto -->
+<!-- Painéis -->
 <div class="expense-panel" id="panel">
   <span class="close-btn" onclick="closePanel()">&times;</span>
   <h2>Registrar Gasto</h2>
   <form id="gastoForm">
-    <div class="form-group">
-      <label for="categoria">Categoria</label>
-      <select id="categoria" required>
-        <option value="">Selecione...</option>
-        <option value="Moradia">Moradia</option>
-        <option value="Transporte">Transporte</option>
-        <option value="Alimentação">Alimentação</option>
-        <option value="Educação">Educação</option>
-        <option value="Saúde">Saúde</option>
-        <option value="Pessoal">Pessoal</option>
-        <option value="Lazer">Lazer</option>
-        <option value="Comunicação">Comunicação</option>
-        <option value="Financeiro">Financeiro</option>
-        <option value="Pets">Pets</option>
-      </select>
+    <div class="form-group"><label for="categoria">Categoria</label>
+      <select id="categoria" required></select>
     </div>
     <div class="form-group">
       <label for="moeda">Moeda e Valor</label>
-      <div style="display: flex; gap: 10px;">
-        <select id="moeda" required style="width: 80px;">
+      <div style="display:flex; gap:10px;">
+        <select id="moeda" required style="width:80px;">
           <option value="R$">R$</option>
           <option value="US$">US$</option>
           <option value="€">€</option>
         </select>
-        <input type="text" id="valor" placeholder="0,00" required />
+        <input type="text" id="valor" placeholder="0,00" required/>
       </div>
     </div>
-    <div class="form-group">
-      <label for="motivo">Motivo</label>
-      <input type="text" id="motivo" required />
-    </div>
-    <div class="form-group">
-      <label for="data">Data</label>
-      <input type="date" id="data" required />
-    </div>
+    <div class="form-group"><label for="motivo">Motivo</label><input type="text" id="motivo" required/></div>
+    <div class="form-group"><label for="data">Data</label><input type="date" id="data" required/></div>
     <button type="submit" id="registrarGasto">Registrar Gasto</button>
   </form>
 </div>
 
-<!-- Painel histórico -->
 <div class="history-panel" id="historyPanel">
   <span class="close-btn" onclick="closeHistory()">&times;</span>
   <h2>Histórico de Gastos</h2>
   <div class="history-list" id="historyList"></div>
 </div>
 
-<!-- Painel perfil -->
 <div class="profile-panel" id="profilePanel">
   <span class="close-btn" onclick="closeProfile()">&times;</span>
   <h2>Editar Perfil</h2>
   <form id="profileForm">
-    <div class="form-group">
-      <label for="nomePerfilInput">Nome Completo *</label>
-      <input type="text" id="nomePerfilInput" required />
-    </div>
-    <div class="form-group">
-      <label for="fotoPerfilInput">URL da Foto *</label>
-      <input type="url" id="fotoPerfilInput" required />
-    </div>
-    <div class="form-group">
-      <label for="descricaoPerfilInput">Descrição (Opcional)</label>
-      <textarea id="descricaoPerfilInput" placeholder="Conte um pouco sobre você..."></textarea>
-    </div>
-    <div class="form-group">
-      <label for="senhaAntigaInput">Senha Antiga *</label>
-      <input type="password" id="senhaAntigaInput" required />
-    </div>
-    <div class="form-group">
-      <label for="senhaNovaInput">Senha Nova *</label>
-      <input type="password" id="senhaNovaInput" required />
-    </div>
+    <div class="form-group"><label for="nomePerfilInput">Nome Completo *</label><input type="text" id="nomePerfilInput" required/></div>
+    <div class="form-group"><label for="fotoPerfilInput">URL da Foto *</label><input type="url" id="fotoPerfilInput" required/></div>
+    <div class="form-group"><label for="descricaoPerfilInput">Descrição (Opcional)</label><textarea id="descricaoPerfilInput"></textarea></div>
+    <div class="form-group"><label for="senhaAntigaInput">Senha Antiga *</label><input type="password" id="senhaAntigaInput" required/></div>
+    <div class="form-group"><label for="senhaNovaInput">Senha Nova *</label><input type="password" id="senhaNovaInput" required/></div>
     <button type="submit" id="salvarPerfil">Salvar Alterações</button>
   </form>
 </div>
 
 <script>
-  // Dados iniciais do perfil
-  let perfil = {
-    nome: "Rafael Barboza Travain",
-    foto: "https://i.pravatar.cc/150?img=12",
-    descricao: ""
-  };
+let gastos = [];
+function openPanel(){document.getElementById('panel').style.display='block';}
+function closePanel(){document.getElementById('panel').style.display='none'; document.getElementById('gastoForm').reset();}
+function openHistory(){document.getElementById('historyPanel').style.display='block'; renderHistory();}
+function closeHistory(){document.getElementById('historyPanel').style.display='none';}
+function closeProfile(){document.getElementById('profilePanel').style.display='none';}
 
-  // Atualiza UI do perfil (foto + nome)
-  function formatarNome(nome) {
-    const partes = nome.trim().split(' ');
-    if (partes.length === 1) return partes[0];
-    return partes[0] + ' ' + partes[1].charAt(0).toUpperCase() + '.';
-  }
+// CSRF
+function getCookie(name){let cookieValue=null;if(document.cookie && document.cookie!==''){const cookies=document.cookie.split(';');for(let cookie of cookies){cookie=cookie.trim();if(cookie.startsWith(name+'=')){cookieValue=decodeURIComponent(cookie.substring(name.length+1));break;}}}return cookieValue;}
 
-  function atualizarPerfilUI() {
-    document.getElementById('nomePerfil').textContent = formatarNome(perfil.nome);
-    document.getElementById('fotoPerfil').src = perfil.foto;
-  }
+// Perfil
+async function carregarPerfil(){
+  const res = await fetch('/perfil/');
+  const data = await res.json();
+  document.getElementById('nomePerfil').textContent=data.nome;
+  document.getElementById('fotoPerfil').src=data.foto;
+}
+carregarPerfil();
 
-  atualizarPerfilUI();
+document.getElementById('perfil').addEventListener('click', async ()=>{
+  const res = await fetch('/perfil/');
+  const data = await res.json();
+  document.getElementById('profilePanel').style.display='block';
+  document.getElementById('nomePerfilInput').value=data.nome;
+  document.getElementById('fotoPerfilInput').value=data.foto;
+  document.getElementById('descricaoPerfilInput').value=data.descricao;
+  document.getElementById('senhaAntigaInput').value='';
+  document.getElementById('senhaNovaInput').value='';
+});
 
-  // Abre painel perfil e preenche dados atuais
-  document.getElementById('perfil').addEventListener('click', () => {
-    document.getElementById('profilePanel').style.display = 'block';
-    document.getElementById('nomePerfilInput').value = perfil.nome;
-    document.getElementById('fotoPerfilInput').value = perfil.foto;
-    document.getElementById('descricaoPerfilInput').value = perfil.descricao;
-    document.getElementById('senhaAntigaInput').value = '';
-    document.getElementById('senhaNovaInput').value = '';
+document.getElementById('profileForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const formData=new FormData();
+  formData.append("nome", document.getElementById('nomePerfilInput').value.trim());
+  formData.append("foto", document.getElementById('fotoPerfilInput').value.trim());
+  formData.append("descricao", document.getElementById('descricaoPerfilInput').value.trim());
+  formData.append("senha_antiga", document.getElementById('senhaAntigaInput').value);
+  formData.append("senha_nova", document.getElementById('senhaNovaInput').value);
+
+  const res=await fetch('/perfil/atualizar/', {method:'POST', body:formData, headers:{'X-CSRFToken':getCookie('csrftoken')}});
+  const data=await res.json();
+  if(data.error) alert(data.error);
+  else { alert("Perfil atualizado!"); closeProfile(); carregarPerfil(); }
+});
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', ()=>{window.location.href='/logout/';});
+
+// Gráfico
+function atualizarGrafico(){
+  const categorias={};
+  gastos.forEach(g=>{if(!categorias[g.categoria]) categorias[g.categoria]=0; categorias[g.categoria]+=parseFloat(g.valor.replace(',','.'));});
+  const ctx=document.getElementById('gastoChart').getContext('2d');
+  if(window.myChart) window.myChart.destroy();
+  window.myChart=new Chart(ctx,{type:'bar',data:{labels:Object.keys(categorias),datasets:[{label:'Gastos por Categoria',data:Object.values(categorias),backgroundColor:'#00bcd4',borderRadius:5}]},options:{responsive:true,scales:{y:{beginAtZero:true}}}});
+}
+
+function renderHistory(){
+  const list=document.getElementById('historyList'); list.innerHTML='';
+  gastos.forEach((g,i)=>{
+    const div=document.createElement('div'); div.className='history-item';
+    div.innerHTML=`<span><strong>Categoria:</strong> ${g.categoria}</span><span><strong>Valor:</strong> ${g.moeda} ${g.valor}</span><span><strong>Motivo:</strong> ${g.motivo}</span><span><strong>Data:</strong> ${g.data}</span><div class="history-actions"><button onclick="excluirGasto(${i})">Excluir</button></div>`;
+    list.appendChild(div);
   });
+}
 
-  function closeProfile() {
-    document.getElementById('profilePanel').style.display = 'none';
-  }
+function excluirGasto(index){gastos.splice(index,1); renderHistory(); atualizarGrafico();}
 
-  // Resto do código gasto, gráfico e histórico...
+// Formulário de gastos
+document.getElementById('gastoForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const categoria=document.getElementById('categoria').value;
+  const moeda=document.getElementById('moeda').value;
+  let valor=document.getElementById('valor').value.replace(/[^\d,]/g,'');
+  if(!valor.includes(',')) valor+=",00"; else if(valor.split(',')[1].length===1) valor+="0";
+  const motivo=document.getElementById('motivo').value;
+  const data=document.getElementById('data').value;
+  gastos.push({categoria,moeda,valor,motivo,data});
+  closePanel(); atualizarGrafico();
+});
 
-  let gastos = [];
-
-  function openPanel() {
-    document.getElementById('panel').style.display = 'block';
-  }
-
-  function closePanel() {
-    document.getElementById('panel').style.display = 'none';
-    document.getElementById('gastoForm').reset();
-  }
-
-  function openHistory() {
-    document.getElementById('historyPanel').style.display = 'block';
-    renderHistory();
-  }
-
-  function closeHistory() {
-    document.getElementById('historyPanel').style.display = 'none';
-  }
-
-  function atualizarGrafico() {
-    const categorias = {};
-    gastos.forEach(g => {
-      if (!categorias[g.categoria]) categorias[g.categoria] = 0;
-      categorias[g.categoria] += parseFloat(g.valor.replace(',', '.'));
-    });
-
-    const ctx = document.getElementById('gastoChart').getContext('2d');
-    if (window.myChart) window.myChart.destroy();
-    window.myChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: Object.keys(categorias),
-        datasets: [{
-          label: 'Gastos por Categoria',
-          data: Object.values(categorias),
-          backgroundColor: '#00bcd4',
-          borderRadius: 5
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: { beginAtZero: true }
-        }
-      }
-    });
-  }
-
-  function renderHistory() {
-    const list = document.getElementById('historyList');
-    list.innerHTML = '';
-    gastos.forEach((g, i) => {
-      const div = document.createElement('div');
-      div.className = 'history-item';
-      div.innerHTML = `
-        <span><strong>Categoria:</strong> ${g.categoria}</span>
-        <span><strong>Valor:</strong> ${g.moeda} ${g.valor}</span>
-        <span><strong>Motivo:</strong> ${g.motivo}</span>
-        <span><strong>Data:</strong> ${g.data}</span>
-        <div class="history-actions">
-          <button onclick="excluirGasto(${i})">Excluir</button>
-        </div>
-      `;
-      list.appendChild(div);
-    });
-  }
-
-  function excluirGasto(index) {
-    gastos.splice(index, 1);
-    renderHistory();
-    atualizarGrafico();
-  }
-
-  // Gasto formulário
-  document.getElementById('gastoForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const categoria = document.getElementById('categoria').value;
-    const moeda = document.getElementById('moeda').value;
-    let valor = document.getElementById('valor').value.replace(/[^\d,]/g, '');
-    if (!valor.includes(',')) valor += ',00';
-    else if (valor.split(',')[1].length === 1) valor += '0';
-    const motivo = document.getElementById('motivo').value;
-    const data = document.getElementById('data').value;
-
-    gastos.push({ categoria, moeda, valor, motivo, data });
-    closePanel();
-    atualizarGrafico();
-  });
-
-  // Perfil formulário
-  document.getElementById('profileForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const nomeNovo = document.getElementById('nomePerfilInput').value.trim();
-    const fotoNova = document.getElementById('fotoPerfilInput').value.trim();
-    const descricaoNova = document.getElementById('descricaoPerfilInput').value.trim();
-    const senhaAntiga = document.getElementById('senhaAntigaInput').value;
-    const senhaNova = document.getElementById('senhaNovaInput').value;
-
-    // Validação simples dos campos obrigatórios (já required no html)
-    if (!nomeNovo || !fotoNova || !senhaAntiga || !senhaNova) {
-      alert("Por favor, preencha todos os campos obrigatórios.");
-      return;
-    }
-
-    // Simulação da verificação da senha antiga - aqui sempre aceita para demo
-    // Você pode implementar verificação real conforme backend
-    // Se quiser, pode alterar para rejeitar se senha antiga estiver errada
-
-    // Atualiza dados do perfil
-    perfil.nome = nomeNovo;
-    perfil.foto = fotoNova;
-    perfil.descricao = descricaoNova;
-
-    atualizarPerfilUI();
-    alert("Perfil atualizado com sucesso!");
-    closeProfile();
-  });
-
-  // Inicializa gráfico vazio
-  atualizarGrafico();
+atualizarGrafico();
 </script>
-
 </body>
 </html>
