@@ -1,56 +1,108 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import logout
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from .models import Perfil, Categoria, Despesa
-from django.contrib.auth.models import User
-from django.views.decorators.csrf import csrf_exempt
+from .models import Despesa, Categoria
 
-@login_required
-def principal(request):
-    return render(request, "principal.html")
-
-@login_required
-def get_perfil(request):
-    user = request.user
-    perfil, created = Perfil.objects.get_or_create(user=user)
-    data = {
-        "nome": user.get_full_name() or user.username,
-        "foto": perfil.foto or "https://i.pravatar.cc/150",
-        "descricao": perfil.descricao or ""
-    }
-    return JsonResponse(data)
-
-@login_required
-@csrf_exempt
-def atualizar_perfil(request):
+# Login
+def Login(request):
     if request.method == "POST":
-        user = request.user
-        perfil, created = Perfil.objects.get_or_create(user=user)
-        nome = request.POST.get("nome")
-        foto = request.POST.get("foto")
-        descricao = request.POST.get("descricao")
-        senha_antiga = request.POST.get("senha_antiga")
-        senha_nova = request.POST.get("senha_nova")
+        username = request.POST['username']
+        password = request.POST['password']
+        remember = request.POST.get('remember', None)
 
-        if not user.check_password(senha_antiga):
-            return JsonResponse({"error": "Senha antiga incorreta"}, status=400)
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            if not remember:
+                request.session.set_expiry(0)
+            return redirect('principal')
+        else:
+            return render(request, 'login.html', {'error': 'Usuário ou senha inválidos'})
+    return render(request, 'login.html')
 
-        # Atualiza nome e senha
-        user.first_name = nome.split()[0]
-        user.last_name = " ".join(nome.split()[1:]) if len(nome.split()) > 1 else ""
-        user.set_password(senha_nova)
+# Cadastro
+def CriarConta(request):
+    if request.method == "POST":
+        username = request.POST['username']
+        email = request.POST['email']
+        password = request.POST['password']
+
+        if User.objects.filter(username=username).exists():
+            return render(request, 'criar_conta.html', {'error': 'Usuário já existe'})
+
+        user = User.objects.create_user(username=username, email=email, password=password)
         user.save()
+        return redirect('login')
 
-        # Atualiza perfil
-        perfil.foto = foto
-        perfil.descricao = descricao
-        perfil.save()
+    return render(request, 'criar_conta.html')
 
-        return JsonResponse({"success": True})
-    return JsonResponse({"error": "Método inválido"}, status=400)
-
+# Principal
 @login_required
-def sair(request):
+def Principal(request):
+    return render(request, 'principal.html')
+
+# Logout
+def LogoutView(request):
     logout(request)
-    return redirect("/login/")
+    return redirect('login')
+
+# Inicializar categorias padrão
+def inicializar_categorias():
+    categorias_padrao = ["Moradia", "Alimentação", "Transporte", "Saúde", "Lazer", "Pessoais"]
+    for nome in categorias_padrao:
+        Categoria.objects.get_or_create(nome=nome)
+
+# Listar categorias
+@login_required
+def listar_categorias(request):
+    inicializar_categorias()  # Garante que as categorias existam
+    categorias = Categoria.objects.all()
+    data = [{"id": c.id, "nome": c.nome} for c in categorias]
+    return JsonResponse(data, safe=False)
+
+# Adicionar despesa
+@login_required
+def adicionar_despesa(request):
+    if request.method == "POST":
+        categoria_id = request.POST.get("categoria")
+        titulo = request.POST.get("titulo")
+        valor = request.POST.get("valor")
+        data = request.POST.get("data")
+
+        categoria = Categoria.objects.get(id=categoria_id)
+        Despesa.objects.create(
+            titulo=titulo,
+            valor=valor,
+            data=data,
+            categoria=categoria
+        )
+        return JsonResponse({"status":"ok"})
+    return JsonResponse({"status":"erro"})
+
+# Listar despesas
+@login_required
+def listar_despesas(request):
+    despesas = Despesa.objects.select_related('categoria').all().order_by('-data')
+    data = [
+        {
+            'id': d.id,
+            'titulo': d.titulo,
+            'valor': float(d.valor),
+            'data': d.data.strftime('%Y-%m-%d'),
+            'categoria': {'id': d.categoria.id, 'nome': d.categoria.nome}
+        }
+        for d in despesas
+    ]
+    return JsonResponse(data, safe=False)
+
+# Excluir despesa
+@login_required
+def excluir_despesa(request, id):
+    try:
+        despesa = Despesa.objects.get(id=id)
+        despesa.delete()
+        return JsonResponse({"status":"ok"})
+    except Despesa.DoesNotExist:
+        return JsonResponse({"status":"erro"})
