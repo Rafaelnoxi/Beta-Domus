@@ -5,6 +5,14 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from .models import Despesa, Categoria
 
+# ------------------ NOVA VIEW INICIAL ------------------
+def Home(request):
+    # se o usuário já estiver logado, vai direto para o painel
+    if request.user.is_authenticated:
+        return redirect('principal')
+    return render(request, 'home.html')
+# -------------------------------------------------------
+
 # Login
 def Login(request):
     if request.method == "POST":
@@ -57,7 +65,7 @@ def inicializar_categorias():
 # Listar categorias
 @login_required
 def listar_categorias(request):
-    inicializar_categorias()  # Garante que as categorias existam
+    inicializar_categorias()
     categorias = Categoria.objects.all()
     data = [{"id": c.id, "nome": c.nome} for c in categorias]
     return JsonResponse(data, safe=False)
@@ -78,8 +86,8 @@ def adicionar_despesa(request):
             data=data,
             categoria=categoria
         )
-        return JsonResponse({"status":"ok"})
-    return JsonResponse({"status":"erro"})
+        return JsonResponse({"status": "ok"})
+    return JsonResponse({"status": "erro"})
 
 # Listar despesas
 @login_required
@@ -103,6 +111,6 @@ def excluir_despesa(request, id):
     try:
         despesa = Despesa.objects.get(id=id)
         despesa.delete()
-        return JsonResponse({"status":"ok"})
+        return JsonResponse({"status": "ok"})
     except Despesa.DoesNotExist:
-        return JsonResponse({"status":"erro"})
+        return JsonResponse({"status": "erro"})

@@ -1,0 +1,213 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Domus - Seu Dinheiro Sob Controle</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #0d0d12;
+      color: #fff;
+    }
+
+    /* SEÇÃO HERO */
+    .hero {
+      background-color: #1677ff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 100px 10%;
+      flex-wrap: wrap;
+    }
+
+    .hero-content {
+      max-width: 500px;
+    }
+
+    .hero-content h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+
+    .hero-content p {
+      font-size: 1rem;
+      color: #e0e0e0;
+      margin-bottom: 40px;
+    }
+
+    .btn-entrar {
+      display: inline-block;
+      background: #37b5ff;
+      color: #fff;
+      padding: 14px 45px;
+      border-radius: 30px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: 0.3s ease;
+    }
+
+    .btn-entrar:hover {
+      background: #56c1ff;
+      transform: scale(1.05);
+    }
+
+    .hero-image img {
+      width: 300px;
+      animation: flutuar 3s ease-in-out infinite;
+    }
+
+    @keyframes flutuar {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* SEÇÃO BEM-VINDO */
+    .bemvindo {
+      background: url('https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1400&q=80') no-repeat center/cover;
+      padding: 100px 10%;
+      text-align: center;
+      color: #fff;
+      position: relative;
+    }
+
+    .bemvindo::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(13, 13, 18, 0.6);
+    }
+
+    .bemvindo-content {
+      position: relative;
+      z-index: 2;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .bemvindo h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .bemvindo p {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #e0e0e0;
+    }
+
+    /* SEÇÃO RECURSOS */
+    .recursos {
+      background: #0d0d12;
+      padding: 100px 10%;
+      text-align: center;
+    }
+
+    .recursos h2 {
+      font-size: 2rem;
+      margin-bottom: 60px;
+      color: #2b8cff;
+    }
+
+    .cards {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 40px;
+    }
+
+    .card {
+      background: #13131f;
+      border-radius: 20px;
+      padding: 40px 30px;
+      width: 270px;
+      transition: 0.3s;
+      border: 1px solid #202032;
+    }
+
+    .card:hover {
+      transform: translateY(-10px);
+      border-color: #2b8cff;
+    }
+
+    .icon-circle {
+      background-color: #2b8cff;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 25px;
+    }
+
+    .icon-circle img {
+      width: 40px;
+      filter: brightness(0) invert(1);
+    }
+
+    .card p {
+      font-size: 0.95rem;
+      color: #cfcfcf;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Domus<br>Seu dinheiro,<br>Sob controle.</h1>
+      <p>Domus – Simplificando o controle dos seus gastos</p>
+      <a href="{% url 'login' %}" class="btn-entrar">ENTRAR</a>
+    </div>
+    <div class="hero-image">
+      <!-- Logo Domus embutida em Base64 -->
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAACWCAYAAADu6xwzAAAACXBIWXMAAAsTAAALEwEAmpwYAAA..." alt="Logo Domus">
+    </div>
+  </section>
+
+  <!-- BEM-VINDO -->
+  <section class="bemvindo">
+    <div class="bemvindo-content">
+      <h2>Bem-vindo ao Domus 👋</h2>
+      <p>
+        Aqui você vai transformar a forma como lida com suas finanças.<br>
+        Cadastre suas despesas, acompanhe seus resultados e veja suas metas se tornarem realidade.<br><br>
+        Com o Domus, você não perde o controle — ganha autonomia.
+      </p>
+    </div>
+  </section>
+
+  <!-- RECURSOS -->
+  <section class="recursos">
+    <h2>Principais recursos</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="icon-circle">
+          <img src="https://cdn-icons-png.flaticon.com/512/992/992651.png" alt="Controle de gastos">
+        </div>
+        <p>Controla e te ajuda a gastar menos</p>
+      </div>
+      <div class="card">
+        <div class="icon-circle">
+          <img src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="Gráficos automáticos">
+        </div>
+        <p>Cria um gráfico automático para melhor visualização dos gastos</p>
+      </div>
+      <div class="card">
+        <div class="icon-circle">
+          <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" alt="Assistente inteligente">
+        </div>
+        <p>Chat com uma inteligência artificial para te ajudar</p>
+      </div>
+    </div>
+  </section>
+
+</body>
+</html>

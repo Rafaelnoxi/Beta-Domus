@@ -2,7 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.Login, name='login'),
+    path('', views.Home, name='home'),  # Tela inicial antes do login
+    path('login/', views.Login, name='login'),
     path('criar_conta/', views.CriarConta, name='criar_conta'),
     path('principal/', views.Principal, name='principal'),
     path('logout/', views.LogoutView, name='logout'),
