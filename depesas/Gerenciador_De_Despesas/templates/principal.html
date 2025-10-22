@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Controle de Gastos</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+/* --- ESTILOS GERAIS --- */
+body { font-family: Arial; margin:0; background:#222; color:#fff; min-height:100vh; }
+#perfilContainer { position:fixed; top:10px; right:15px; display:flex; gap:10px; z-index:1000; }
+#perfil { display:flex; align-items:center; gap:10px; background:rgba(40,40,40,0.85); padding:6px 12px; border-radius:25px; cursor:pointer; }
+#perfil:hover { background-color: rgba(0, 188, 212, 0.15); }
+#perfil img { width:40px; height:40px; border-radius:50%; border:2px solid #00bcd4; object-fit:cover; }
+#perfil span { font-weight:bold; font-size:14px; color:#00bcd4; }
+#logoutBtn { background-color:#e53935; border:none; padding:6px 12px; border-radius:6px; color:#fff; font-weight:bold; cursor:pointer; }
+#logoutBtn:hover { background-color:#c62828; }
+
+h1 { text-align:center; margin:80px 0 10px 0; }
+.center { text-align:center; margin:20px 0; }
+.main-button { background-color:#00bcd4; color:white; border:none; border-radius:5px; padding:12px 25px; font-size:16px; cursor:pointer; }
+.main-button:hover { transform: scale(1.05); }
+
+.expense-panel, .history-panel { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background-color:rgba(40,40,40,0.95); padding:25px; border-radius:12px; width:400px; z-index:9999; }
+.close-btn { position:absolute; top:10px; right:15px; font-size:20px; color:#fff; cursor:pointer; }
+
+.form-group { margin-bottom:15px; }
+.form-group label { display:block; margin-bottom:5px; font-size:14px; color:#ddd; }
+.form-group input, .form-group select { width:100%; padding:8px; border-radius:6px; border:none; font-size:14px; background:#e0e0e0; color:#222; }
+
+#registrarGasto { background-color:#0288d1; color:white; padding:10px; border:none; border-radius:6px; cursor:pointer; width:100%; font-weight:bold; }
+#registrarGasto:hover { background-color:#0277bd; }
+
+.history-button { display:block; margin:20px auto; padding:6px 12px; font-size:13px; background-color:rgba(255,255,255,0.1); color:#fff; border:1px solid #888; border-radius:5px; cursor:pointer; }
+.history-list { max-height:300px; overflow-y:auto; margin-top:10px; color:#eee; }
+.history-item { background-color: rgba(255,255,255,0.05); padding:10px; border-radius:5px; margin-bottom:8px; font-size:14px; }
+.history-item span { display:block; }
+.history-item button { font-size:12px; margin-top:5px; background:#444; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; }
+
+canvas { display:block; margin:40px auto 10px; max-width:90%; }
+
+/* --- CHAT IA --- */
+#chat-container {
+  max-width: 600px;
+  margin: 30px auto;
+  border-radius: 20px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+#chat-header {
+  background:#00bcd4;
+  padding:10px;
+  border-radius:20px 20px 0 0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
+}
+#chat-body {
+  display:flex;
+  flex-direction:column;
+  height:450px;
+  background:#1a1a1a;
+  border-radius:0 0 20px 20px;
+  padding:10px;
+}
+#chat-box { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; }
+#chat-input { display:flex; margin-top:10px; }
+#user-input { flex:1; padding:10px; border:none; border-radius:10px; outline:none; background:#2a2a2a; color:#fff; }
+#send-btn { background-color:#00bcd4; color:white; border:none; margin-left:10px; border-radius:10px; padding:10px 20px; cursor:pointer; transition:0.2s; }
+#send-btn:hover { background-color:#0097a7; }
+
+/* --- MINI TRELLO --- */
+.trello-container { margin:50px auto 50px auto; max-width:1200px; }
+.board-container { display:flex; flex-direction:column; align-items:center; }
+.top-controls { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; justify-content:center; }
+.top-controls input, .top-controls button, .top-controls select { padding:8px 12px; border-radius:8px; border:none; font-size:14px; }
+.top-controls input, .top-controls select { background-color:#1b263b; color:#f0f0f0; }
+.top-controls button { background-color:#415a77; color:#fff; cursor:pointer; transition:0.2s; }
+.top-controls button:hover { background-color:#627d98; }
+.board { display:flex; justify-content:flex-start; padding:20px; gap:20px; overflow-x:auto; width:100%; }
+.column { background-color:#1b263b; width:250px; padding:15px; border-radius:12px; flex-shrink:0; position:relative; box-shadow:0 4px 8px rgba(0,0,0,0.3); transition:0.2s; }
+.column:hover { transform:translateY(-3px); }
+.column h3 { text-align:center; margin:0 0 10px 0; cursor:pointer; user-select:none; color:#fff; }
+.delete-column-btn { position:absolute; top:5px; right:5px; background-color:#e63946; color:#fff; border:none; border-radius:4px; cursor:pointer; padding:2px 6px; font-size:12px; transition:0.2s; }
+.delete-column-btn:hover { background-color:#f77f00; }
+.card { background-color:#415a77; padding:10px; margin:10px 0; border-radius:10px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:0.2s; }
+.card:hover { background-color:#627d98; transform:translateY(-2px); }
+.card .handle { cursor:grab; margin-right:10px; color:#f0f0f0; }
+.card button { background-color:#e63946; color:#fff; border:none; border-radius:5px; cursor:pointer; padding:2px 6px; font-size:12px; transition:0.2s; }
+.card button:hover { background-color:#f77f00; }
+.editable { outline:none; color:#f0f0f0; width:100%; }
+
+/* Scrollbar customizada */
+::-webkit-scrollbar { height:8px; width:8px; }
+::-webkit-scrollbar-track { background:#1b263b; }
+::-webkit-scrollbar-thumb { background:#415a77; border-radius:4px; }
+::-webkit-scrollbar-thumb:hover { background:#627d98; }
+</style>
+</head>
+<body>
+
+<!-- PERFIL -->
+<div id="perfilContainer">
+  <div id="perfil" title="Perfil">
+    <img src="https://i.pravatar.cc/40" alt="Foto Perfil" />
+    <span>{{ request.user.username }}</span>
+  </div>
+  <button id="logoutBtn">Sair</button>
+</div>
+
+<h1>Controle de Gastos</h1>
+<div class="center"><button class="main-button" onclick="openPanel()">Adicionar Gasto</button></div>
+<canvas id="gastoChart" width="400" height="200"></canvas>
+<button class="history-button" onclick="openHistory()">Ver Histórico de Gastos</button>
+
+<!-- PAINÉIS -->
+<div class="expense-panel" id="panel">
+  <span class="close-btn" onclick="closePanel()">&times;</span>
+  <h2>Registrar Gasto</h2>
+  <form id="gastoForm">
+    <div class="form-group"><label for="categoria">Categoria</label>
+      <select id="categoria" required></select>
+    </div>
+    <div class="form-group"><label for="valor">Valor</label><input type="text" id="valor" placeholder="0,00" required/></div>
+    <div class="form-group"><label for="motivo">Motivo</label><input type="text" id="motivo" required/></div>
+    <div class="form-group"><label for="data">Data</label><input type="date" id="data" required/></div>
+    <button type="submit" id="registrarGasto">Registrar Gasto</button>
+  </form>
+</div>
+
+<div class="history-panel" id="historyPanel">
+  <span class="close-btn" onclick="closeHistory()">&times;</span>
+  <h2>Histórico de Gastos</h2>
+  <div class="history-list" id="historyList"></div>
+</div>
+
+<!-- CHAT IA -->
+<div id="chat-container">
+  <div id="chat-header">
+    <span>Chat IA</span>
+    <button id="minimize-btn">_</button>
+  </div>
+  <div id="chat-body">
+    <div id="chat-box"></div>
+    <div id="chat-input">
+      <input type="text" id="user-input" placeholder="Digite sua mensagem..." />
+      <button id="send-btn">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MINI TRELLO -->
+<div class="trello-container">
+  <h2>Mini Trello Moderno</h2>
+  <div class="board-container">
+    <div class="top-controls">
+      <input type="text" id="newColumnInput" placeholder="Nova coluna">
+      <button id="addColumnBtn">Adicionar Coluna</button>
+      <input type="text" id="newCardInput" placeholder="Nova tarefa">
+      <select id="columnSelect"></select>
+      <button id="addCardBtn">Adicionar Tarefa</button>
+    </div>
+    <div class="board" id="board">
+      <div class="column" id="todo"><h3 contenteditable="true" class="editable">To Do</h3><button class="delete-column-btn">X</button></div>
+      <div class="column" id="doing"><h3 contenteditable="true" class="editable">Doing</h3><button class="delete-column-btn">X</button></div>
+      <div class="column" id="done"><h3 contenteditable="true" class="editable">Done</h3><button class="delete-column-btn">X</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- Funções gerais ---
+function getCookie(name){
+    let cookieValue=null;
+    if(document.cookie && document.cookie!==''){
+        document.cookie.split(';').forEach(cookie => {
+            if(cookie.trim().startsWith(name+'=')){
+                cookieValue=decodeURIComponent(cookie.trim().substring(name.length+1));
+            }
+        });
+    }
+    return cookieValue;
+}
+function openPanel(){document.getElementById('panel').style.display='block';}
+function closePanel(){document.getElementById('panel').style.display='none'; document.getElementById('gastoForm').reset();}
+function openHistory(){document.getElementById('historyPanel').style.display='block'; carregarGastos();}
+function closeHistory(){document.getElementById('historyPanel').style.display='none';}
+document.getElementById('logoutBtn').addEventListener('click', ()=>{window.location.href='/logout/';});
+
+// --- Categorias ---
+async function carregarCategorias(){
+  const res = await fetch("/categorias/");
+  const categorias = await res.json();
+  const select = document.getElementById("categoria");
+  select.innerHTML = '<option value="">Selecione...</option>';
+  categorias.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c.id;
+    opt.textContent = c.nome;
+    select.appendChild(opt);
+  });
+}
+carregarCategorias();
+
+// --- Registrar despesa ---
+document.getElementById('gastoForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const categoria_id = document.getElementById('categoria').value;
+  const valor = document.getElementById('valor').value.replace(/[^\d,]/g,'').replace(',','.');
+  const motivo = document.getElementById('motivo').value;
+  const data = document.getElementById('data').value;
+
+  const res = await fetch("/despesa/adicionar/", {
+    method: "POST",
+    headers: {
+      "Content-Type":"application/x-www-form-urlencoded",
+      "X-CSRFToken": getCookie('csrftoken')
+    },
+    body: `categoria=${categoria_id}&valor=${valor}&titulo=${motivo}&data=${data}`
+  });
+
+  const result = await res.json();
+  if(result.status==="ok"){
+    closePanel();
+    carregarGastos();
+  } else {
+    alert("Erro ao registrar gasto");
+  }
+});
+
+// --- Carregar despesas ---
+async function carregarGastos(){
+  const res = await fetch("/despesas/listar/");
+  const despesas = await res.json();
+  const historyList = document.getElementById('historyList');
+  historyList.innerHTML = '';
+  despesas.forEach(d => {
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.innerHTML = `<span><strong>Categoria:</strong> ${d.categoria.nome}</span>
+                     <span><strong>Valor:</strong> R$ ${d.valor.toFixed(2)}</span>
+                     <span><strong>Motivo:</strong> ${d.titulo}</span>
+                     <span><strong>Data:</strong> ${d.data}</span>
+                     <button onclick="excluirGasto(${d.id})">Excluir</button>`;
+    historyList.appendChild(div);
+  });
+  atualizarGrafico(despesas);
+}
+
+// --- Excluir gasto ---
+async function excluirGasto(id){
+  const res = await fetch(`/despesa/excluir/${id}/`);
+  const result = await res.json();
+  if(result.status==="ok"){ carregarGastos(); }
+  else { alert("Erro ao excluir gasto"); }
+}
+
+// --- Gráfico ---
+function atualizarGrafico(despesas){
+  const categorias = {};
+  despesas.forEach(g => { if(!categorias[g.categoria.nome]) categorias[g.categoria.nome] = 0; categorias[g.categoria.nome] += parseFloat(g.valor); });
+  const ctx = document.getElementById('gastoChart').getContext('2d');
+  if(window.myChart) window.myChart.destroy();
+  window.myChart = new Chart(ctx,{
+    type:'bar',
+    data:{ labels:Object.keys(categorias), datasets:[{label:'Gastos por Categoria', data:Object.values(categorias), backgroundColor:'#00bcd4', borderRadius:5}] },
+    options:{responsive:true, scales:{y:{beginAtZero:true}}}
+  });
+}
+carregarGastos();
+
+// --- Chat IA ---
+document.getElementById("send-btn").addEventListener("click", sendMessage);
+document.getElementById("user-input").addEventListener("keypress", function(e){ if(e.key==="Enter") sendMessage(); });
+
+function appendMessage(message, sender){
+  const msgDiv = document.createElement("div");
+  msgDiv.classList.add("message", sender==="user"?"user-message":"bot-message");
+  msgDiv.textContent = message;
+  document.getElementById("chat-box").appendChild(msgDiv);
+  document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+}
+
+function sendMessage(){
+  const input = document.getElementById("user-input");
+  const message = input.value.trim();
+  if(!message) return;
+  appendMessage(message,"user");
+  input.value = "";
+  fetch("{% url 'chat_ia' %}", {
+    method:"POST",
+    headers:{"X-CSRFToken": getCookie('csrftoken'), "Content-Type":"application/x-www-form-urlencoded"},
+    body:"message="+encodeURIComponent(message)
+  })
+  .then(res=>res.json())
+  .then(data=>appendMessage(data.response,"bot"))
+  .catch(err=>appendMessage("Erro ao enviar mensagem.","bot"));
+}
+
+// --- Minimizar Chat ---
+const chatBody = document.getElementById('chat-body');
+const minimizeBtn = document.getElementById('minimize-btn');
+let isMinimized = false;
+minimizeBtn.addEventListener('click', ()=>{
+  isMinimized = !isMinimized;
+  chatBody.style.display = isMinimized ? 'none' : 'flex';
+  minimizeBtn.textContent = isMinimized ? '▢' : '_';
+});
+
+// --- Mini Trello ---
+const board = document.getElementById('board');
+const columnSelect = document.getElementById('columnSelect');
+
+function updateColumnSelect() {
+  columnSelect.innerHTML = '';
+  board.querySelectorAll('.column').forEach(col => {
+    const option = document.createElement('option');
+    option.value = col.id;
+    option.textContent = col.querySelector('h3').textContent;
+    columnSelect.appendChild(option);
+  });
+}
+
+const addCardBtn = document.getElementById('addCardBtn');
+addCardBtn.addEventListener('click', () => {
+  const value = document.getElementById('newCardInput').value.trim();
+  const colId = columnSelect.value;
+  if (!value || !colId) return;
+  const columnElement = document.getElementById(colId);
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `<span>${value}</span> <button onclick="this.parentElement.remove()">X</button>`;
+  columnElement.appendChild(card);
+  document.getElementById('newCardInput').value = '';
+});
+
+document.getElementById('addColumnBtn').addEventListener('click', () => {
+  const name = document.getElementById('newColumnInput').value.trim();
+  if(!name) return;
+  const col = document.createElement('div');
+  const id = name.toLowerCase().replace(/\s+/g,'-') + '-' + Date.now();
+  col.id = id;
+  col.className = 'column';
+  col.innerHTML = `<h3 contenteditable="true" class="editable">${name}</h3><button class="delete-column-btn">X</button>`;
+  board.appendChild(col);
+  document.getElementById('newColumnInput').value='';
+  updateColumnSelect();
+});
+
+board.addEventListener('click', e=>{
+  if(e.target.classList.contains('delete-column-btn')){
+    e.target.parentElement.remove();
+    updateColumnSelect();
+  }
+});
+
+updateColumnSelect();
+</script>
+
+</body>
+</html>

@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv  # 👈 adicionado para usar o .env
+
+# Carrega o arquivo .env
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-z5nf5+w&myh+*i^-l(77c5%@%h$yf^+0q9%_u4ychq_zwd8i77'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-z5nf5+w&myh+*i^-l(77c5%@%h$yf^+0q9%_u4ychq_zwd8i77')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -55,7 +60,7 @@ ROOT_URLCONF = 'depesas.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],  # 👈 garante que o principal.html será encontrado
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -103,12 +108,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+LANGUAGE_CODE = 'pt-br'  # 👈 alterado para português
+TIME_ZONE = 'America/Sao_Paulo'  # 👈 fuso horário do Brasil
 USE_I18N = True
-
 USE_TZ = True
 
 
@@ -116,8 +118,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']  # 👈 adicionado para ler seus arquivos estáticos locais
+STATIC_ROOT = BASE_DIR / 'staticfiles'    # 👈 pasta usada no deploy
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ==========================================================
+# 🔹 CONFIGURAÇÃO DA IA DO GOOGLE (GEMINI)
+# ==========================================================
+# Carrega a chave da IA do arquivo .env
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+if not GEMINI_API_KEY:
+    print("⚠️ Atenção: GEMINI_API_KEY não foi encontrada. Adicione-a no arquivo .env na raiz do projeto.")
